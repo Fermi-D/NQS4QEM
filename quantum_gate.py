@@ -163,13 +163,13 @@ def CX(n_qubit, control_qubit_idx, target_qubit_idx):
     if control_qubit_idx < target_qubit_idx:
         ### |0><0|　\otimes I \otimes ... \otimes I
         cx_mat_term1 = np.kron(mat_00, eye_tensor)
-        ### |1><1| \otimes I \otimes ... \otimes X ... \otimes I
-        cx_mat_term2 = np.kron(mat_11, X(n_qubit-1, target_qubit_idx-1)) 
-      
+        ### |1><1| \otimes I ... \otimes X ...
+        cx_mat_term2 = np.kron(mat_11, X(n_qubit-1, target_qubit_idx-1))
+        
     if control_qubit_idx > target_qubit_idx:
         ### I \otimes ... \otimes I \otimes |0><0|
         cx_mat_term1 = np.kron(eye_tensor, mat_00)
-        ### I \otimes ... \otimes X ... \otimes I \otimes |1><1|
+        ### ... \otimes X ... \otimes |1><1|
         cx_mat_term2 = np.kron(X(n_qubit-1, target_qubit_idx), mat_11)
     
     mat = cx_mat_term1 + cx_mat_term2
@@ -193,14 +193,14 @@ def CY(n_qubit, control_qubit_idx, target_qubit_idx):
     if control_qubit_idx < target_qubit_idx:
         ### |0><0|　\otimes I \otimes ... \otimes I
         cx_mat_term1 = np.kron(mat_00, eye_tensor)
-        ### |1><1| \otimes I \otimes ... \otimes Y ... \otimes I
-        cx_mat_term2 = np.kron(mat_11, Y(n_qubit-1, target_qubit_idx-1)) 
-      
+        ### |1><1| \otimes ... \otimes Y ...
+        cx_mat_term2 = np.kron(mat_11, Y(n_qubit-1, target_qubit_idx-1))
+        
     if control_qubit_idx > target_qubit_idx:
         ### I \otimes ... \otimes I \otimes |0><0|
         cx_mat_term1 = np.kron(eye_tensor, mat_00)
-        ### I \otimes ... \otimes Y ... \otimes I \otimes |1><1|
-        cx_mat_term2 = np.kron(Y(n_qubit-1, target_qubit_idx-1), mat_11)
+        ### ... \otimes Y ... \otimes |1><1|
+        cx_mat_term2 = np.kron(Y(n_qubit-1, target_qubit_idx), mat_11)
     
     mat = cx_mat_term1 + cx_mat_term2
     
@@ -223,25 +223,145 @@ def CZ(n_qubit, control_qubit_idx, target_qubit_idx):
     if control_qubit_idx < target_qubit_idx:
         ### |0><0|　\otimes I \otimes ... \otimes I
         cx_mat_term1 = np.kron(mat_00, eye_tensor)
-        ### |1><1| \otimes I \otimes ... \otimes Z ... \otimes I
-        cx_mat_term2 = np.kron(mat_11, Z(n_qubit-1, target_qubit_idx-1)) 
-      
+        ### |1><1| \otimes I ... \otimes Z ...
+        cx_mat_term2 = np.kron(mat_11, Z(n_qubit-1, target_qubit_idx-1))
+        
     if control_qubit_idx > target_qubit_idx:
         ### I \otimes ... \otimes I \otimes |0><0|
         cx_mat_term1 = np.kron(eye_tensor, mat_00)
-        ### I \otimes ... \otimes Z ... \otimes I \otimes |1><1|
-        cx_mat_term2 = np.kron(Z(n_qubit-1, target_qubit_idx-1), mat_11)
+        ### ... \otimes Z ... \otimes |1><1|
+        cx_mat_term2 = np.kron(Z(n_qubit-1, target_qubit_idx), mat_11)
     
     mat = cx_mat_term1 + cx_mat_term2
     
     return mat
 
 ## CH gate
+def CH(n_qubit, control_qubit_idx, target_qubit_idx):
+    I = np.eye(2)
+    ket_0 = np.array([[1],[0]]) 
+    ket_1 = np.array([[0],[1]])
+    
+    mat_00 = ket_0 @ ket_0.T.conjugate() ### |0><0|
+    mat_11 = ket_1 @ ket_1.T.conjugate() ### |1><1|
+    
+    eye_tensor = I
+    
+    for i in range(n_qubit-2):
+        eye_tensor = np.kron(eye_tensor, I)
+    
+    if control_qubit_idx < target_qubit_idx:
+        ### |0><0|　\otimes I \otimes ... \otimes I
+        cx_mat_term1 = np.kron(mat_00, eye_tensor)
+        ### |1><1| \otimes I ... \otimes H ...
+        cx_mat_term2 = np.kron(mat_11, H(n_qubit-1, target_qubit_idx-1))
+        
+    if control_qubit_idx > target_qubit_idx:
+        ### I \otimes ... \otimes I \otimes |0><0|
+        cx_mat_term1 = np.kron(eye_tensor, mat_00)
+        ### ... \otimes H ... \otimes |1><1|
+        cx_mat_term2 = np.kron(H(n_qubit-1, target_qubit_idx), mat_11)
+    
+    mat = cx_mat_term1 + cx_mat_term2
+    
+    return mat
 
 ## CRx gate
+def CRx(n_qubit, control_qubit_idx, target_qubit_idx):
+    I = np.eye(2)
+    ket_0 = np.array([[1],[0]]) 
+    ket_1 = np.array([[0],[1]])
+    
+    mat_00 = ket_0 @ ket_0.T.conjugate() ### |0><0|
+    mat_11 = ket_1 @ ket_1.T.conjugate() ### |1><1|
+    
+    eye_tensor = I
+    
+    for i in range(n_qubit-2):
+        eye_tensor = np.kron(eye_tensor, I)
+    
+    if control_qubit_idx < target_qubit_idx:
+        ### |0><0|　\otimes I \otimes ... \otimes I
+        cx_mat_term1 = np.kron(mat_00, eye_tensor)
+        ### |1><1| \otimes I ... \otimes Rx ...
+        cx_mat_term2 = np.kron(mat_11, Rx(n_qubit-1, target_qubit_idx-1))
+        
+    if control_qubit_idx > target_qubit_idx:
+        ### I \otimes ... \otimes I \otimes |0><0|
+        cx_mat_term1 = np.kron(eye_tensor, mat_00)
+        ### ... \otimes Rx ... \otimes |1><1|
+        cx_mat_term2 = np.kron(Rx(n_qubit-1, target_qubit_idx), mat_11)
+    
+    mat = cx_mat_term1 + cx_mat_term2
+    
+    return mat
 
 ## CRy gate
+def CRy(n_qubit, control_qubit_idx, target_qubit_idx):
+    I = np.eye(2)
+    ket_0 = np.array([[1],[0]]) 
+    ket_1 = np.array([[0],[1]])
+    
+    mat_00 = ket_0 @ ket_0.T.conjugate() ### |0><0|
+    mat_11 = ket_1 @ ket_1.T.conjugate() ### |1><1|
+    
+    eye_tensor = I
+    
+    for i in range(n_qubit-2):
+        eye_tensor = np.kron(eye_tensor, I)
+    
+    if control_qubit_idx < target_qubit_idx:
+        ### |0><0|　\otimes I \otimes ... \otimes I
+        cx_mat_term1 = np.kron(mat_00, eye_tensor)
+        ### |1><1| \otimes I ... \otimes Ry ...
+        cx_mat_term2 = np.kron(mat_11, Ry(n_qubit-1, target_qubit_idx-1))
+        
+    if control_qubit_idx > target_qubit_idx:
+        ### I \otimes ... \otimes I \otimes |0><0|
+        cx_mat_term1 = np.kron(eye_tensor, mat_00)
+        ### ... \otimes Ry ... \otimes |1><1|
+        cx_mat_term2 = np.kron(Ry(n_qubit-1, target_qubit_idx), mat_11)
+    
+    mat = cx_mat_term1 + cx_mat_term2
+    
+    return mat
 
 ## CRz gate
+def CRz(n_qubit, control_qubit_idx, target_qubit_idx):
+    I = np.eye(2)
+    ket_0 = np.array([[1],[0]]) 
+    ket_1 = np.array([[0],[1]])
+    
+    mat_00 = ket_0 @ ket_0.T.conjugate() ### |0><0|
+    mat_11 = ket_1 @ ket_1.T.conjugate() ### |1><1|
+    
+    eye_tensor = I
+    
+    for i in range(n_qubit-2):
+        eye_tensor = np.kron(eye_tensor, I)
+    
+    if control_qubit_idx < target_qubit_idx:
+        ### |0><0|　\otimes I \otimes ... \otimes I
+        cx_mat_term1 = np.kron(mat_00, eye_tensor)
+        ### |1><1| \otimes I ... \otimes Rz ...
+        cx_mat_term2 = np.kron(mat_11, Rz(n_qubit-1, target_qubit_idx-1))
+        
+    if control_qubit_idx > target_qubit_idx:
+        ### I \otimes ... \otimes I \otimes |0><0|
+        cx_mat_term1 = np.kron(eye_tensor, mat_00)
+        ### ... \otimes Rz ... \otimes |1><1|
+        cx_mat_term2 = np.kron(Rz(n_qubit-1, target_qubit_idx), mat_11)
+    
+    mat = cx_mat_term1 + cx_mat_term2
+    
+    return mat
 
 ## SWAP gate
+def SWAP(n_qubit, qubit_idx_1, qubit_idx_2):
+    mat = CX(n_qubit, qubit_idx_1, qubit_idx_2) @ CX(n_qubit, qubit_idx_2, qubit_idx_1)
+    mat = mat @ CX(n_qubit, qubit_idx_1, qubit_idx_2)
+    
+    return mat
+
+# 3-qubit gate
+## toffoli gate
