@@ -1,9 +1,13 @@
 import numpy as np
 
-def depolarizing_error(state, error_rate, target_qubit_idx):
-    I = np.eye(2)
-    
+import quantum_gate as gate
 
-def unitary_error(state, theta, target_qubit_idx):
-    #theta = np.sqrt(error_rate)
+def depolarize(state, n_qubit, error_rate, target_qubit_idx):
+    depolarizing_term1 = (1-error_rate)*state
+    depolarizing_term2 = gate.X(n_qubit, target_qubit_idx)@state@gate.X(n_qubit, target_qubit_idx) + gate.Y(n_qubit, target_qubit_idx)@state@gate.Y(n_qubit, target_qubit_idx) + gate.Z(n_qubit, target_qubit_idx)@state@gate.Z(n_qubit, target_qubit_idx)
     
+    return depolarizing_term1 + (error_rate/3)*depolarizing_term2
+    
+def unitary(state, target_qubit_idx, theta):
+    
+    return gate.Rx(n_qubit, target_qubit_idx, theta) @ state @ gate.Rx(n_qubit, target_qubit_idx, theta).T.conjugate()

@@ -98,7 +98,7 @@ def T(n_qubit, target_qubit_idx):
     return mat
 
 ## Rx gate
-def Rx(n_qubit, target_qubit_idx):
+def Rx(n_qubit, target_qubit_idx, theta):
     I = np.eye(2)
     local_Rx = np.array([[np.cos(theta/2),-1j*np.sin(theta/2)], [-1j*np.sin(theta/2),np.cos(theta/2)]])
     if target_qubit_idx==0:
@@ -114,7 +114,7 @@ def Rx(n_qubit, target_qubit_idx):
     return mat
 
 ## Ry gate
-def Ry(n_qubit, target_qubit_idx):
+def Ry(n_qubit, target_qubit_idx, theta):
     I = np.eye(2)
     local_Ry = np.array([[np.cos(theta/2),-np.sin(theta/2)], [-np.sin(theta/2),np.cos(theta/2)]])
     if target_qubit_idx==0:
@@ -130,7 +130,7 @@ def Ry(n_qubit, target_qubit_idx):
     return mat
 
 ## Rz gate
-def Rz(n_qubit, target_qubit_idx):
+def Rz(n_qubit, target_qubit_idx, theta):
     I = np.eye(2)
     local_Rz = np.array([[np.exp(-1j*theta/2),0], [0,np.cos(1j*theta/2)]])
     if target_qubit_idx==0:
@@ -267,7 +267,7 @@ def CH(n_qubit, control_qubit_idx, target_qubit_idx):
     return mat
 
 ## CRx gate
-def CRx(n_qubit, control_qubit_idx, target_qubit_idx):
+def CRx(n_qubit, control_qubit_idx, target_qubit_idx, theta):
     I = np.eye(2)
     ket_0 = np.array([[1],[0]]) 
     ket_1 = np.array([[0],[1]])
@@ -284,20 +284,20 @@ def CRx(n_qubit, control_qubit_idx, target_qubit_idx):
         ### |0><0|　\otimes I \otimes ... \otimes I
         cx_mat_term1 = np.kron(mat_00, eye_tensor)
         ### |1><1| \otimes I ... \otimes Rx ...
-        cx_mat_term2 = np.kron(mat_11, Rx(n_qubit-1, target_qubit_idx-1))
+        cx_mat_term2 = np.kron(mat_11, Rx(n_qubit-1, target_qubit_idx-1, theta))
         
     if control_qubit_idx > target_qubit_idx:
         ### I \otimes ... \otimes I \otimes |0><0|
         cx_mat_term1 = np.kron(eye_tensor, mat_00)
         ### ... \otimes Rx ... \otimes |1><1|
-        cx_mat_term2 = np.kron(Rx(n_qubit-1, target_qubit_idx), mat_11)
+        cx_mat_term2 = np.kron(Rx(n_qubit-1, target_qubit_idx, theta), mat_11)
     
     mat = cx_mat_term1 + cx_mat_term2
     
     return mat
 
 ## CRy gate
-def CRy(n_qubit, control_qubit_idx, target_qubit_idx):
+def CRy(n_qubit, control_qubit_idx, target_qubit_idx, theta):
     I = np.eye(2)
     ket_0 = np.array([[1],[0]]) 
     ket_1 = np.array([[0],[1]])
@@ -314,20 +314,20 @@ def CRy(n_qubit, control_qubit_idx, target_qubit_idx):
         ### |0><0|　\otimes I \otimes ... \otimes I
         cx_mat_term1 = np.kron(mat_00, eye_tensor)
         ### |1><1| \otimes I ... \otimes Ry ...
-        cx_mat_term2 = np.kron(mat_11, Ry(n_qubit-1, target_qubit_idx-1))
+        cx_mat_term2 = np.kron(mat_11, Ry(n_qubit-1, target_qubit_idx-1, theta))
         
     if control_qubit_idx > target_qubit_idx:
         ### I \otimes ... \otimes I \otimes |0><0|
         cx_mat_term1 = np.kron(eye_tensor, mat_00)
         ### ... \otimes Ry ... \otimes |1><1|
-        cx_mat_term2 = np.kron(Ry(n_qubit-1, target_qubit_idx), mat_11)
+        cx_mat_term2 = np.kron(Ry(n_qubit-1, target_qubit_idx, theta), mat_11)
     
     mat = cx_mat_term1 + cx_mat_term2
     
     return mat
 
 ## CRz gate
-def CRz(n_qubit, control_qubit_idx, target_qubit_idx):
+def CRz(n_qubit, control_qubit_idx, target_qubit_idx, theta):
     I = np.eye(2)
     ket_0 = np.array([[1],[0]]) 
     ket_1 = np.array([[0],[1]])
@@ -344,13 +344,13 @@ def CRz(n_qubit, control_qubit_idx, target_qubit_idx):
         ### |0><0|　\otimes I \otimes ... \otimes I
         cx_mat_term1 = np.kron(mat_00, eye_tensor)
         ### |1><1| \otimes I ... \otimes Rz ...
-        cx_mat_term2 = np.kron(mat_11, Rz(n_qubit-1, target_qubit_idx-1))
+        cx_mat_term2 = np.kron(mat_11, Rz(n_qubit-1, target_qubit_idx-1, theta))
         
     if control_qubit_idx > target_qubit_idx:
         ### I \otimes ... \otimes I \otimes |0><0|
         cx_mat_term1 = np.kron(eye_tensor, mat_00)
         ### ... \otimes Rz ... \otimes |1><1|
-        cx_mat_term2 = np.kron(Rz(n_qubit-1, target_qubit_idx), mat_11)
+        cx_mat_term2 = np.kron(Rz(n_qubit-1, target_qubit_idx, theta), mat_11)
     
     mat = cx_mat_term1 + cx_mat_term2
     
