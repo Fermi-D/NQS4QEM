@@ -48,3 +48,9 @@ def GHZ(state_name, n_qubit, error_model):
             density_matrix = gate.Cx(n_qubit,0,i+1) @ density_matrix @ gate.Cx(n_qubit,0,i+1).T.conjugate()
             
         return density_matrix
+    
+"""
+def random_circuit():
+
+def ising_model()
+"""

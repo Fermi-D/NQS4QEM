@@ -365,3 +365,5 @@ def SWAP(n_qubit, qubit_idx_1, qubit_idx_2):
 
 # 3-qubit gate
 ## toffoli gate
+"""
+def toffoli(n_qubit, control_qubit_idx_1, control_qubit_idx_2, target_qubit_idx):
