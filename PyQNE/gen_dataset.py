@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
-import tqdm
+from tqdm import tqdm_notebook as tqdm
 
-n_shot = 
+class CFG:
+    n_shot = 
