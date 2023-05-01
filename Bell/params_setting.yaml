@@ -3,12 +3,12 @@ circuit_info:
      n_shot :
      state_name : "density matrix"
      noise_model : "depolarizing error"
-     error_rate : 
+     error_rate : 0.01
 
 rbm_info:
      n_visible_unit : 2
-     n_hidden_unit : 
-     n_aux_unit :
+     n_hidden_unit : 6
+     n_aux_unit : 6
 
 train_info:
      n_epoch : 
