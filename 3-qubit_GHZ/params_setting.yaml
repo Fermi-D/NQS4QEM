@@ -1,0 +1,20 @@
+circuit_info:
+     n_qubit : 2
+     n_shot :
+     state_name : "density matrix"
+     noise_model : "depolarizing error"
+     error_rate : 
+
+rbm_info:
+     n_visible_unit : 2
+     n_hidden_unit : 
+     n_aux_unit :
+
+train_info:
+     n_epoch : 
+     lr : 
+     lr_drop_epoch : 
+     lr_drop_factor :
+     positive_batch_size :
+     negative_batch_size :
+     n_gibbs_step : 
