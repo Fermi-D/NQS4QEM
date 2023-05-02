@@ -2,7 +2,7 @@ import numpy as np
 
 from PyQNE import quantum_gate as gate
 
-def X_basis(state, n_qubit, target_idx):
+def X_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubits)
     P = gate.X(n_qubit, target_idx)
     operator_0 = (I+P) / 2
@@ -10,7 +10,7 @@ def X_basis(state, n_qubit, target_idx):
     
     return operator_0, operator_1
 
-def Y_basis(state, n_qubit, target_idx):
+def Y_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubits)
     P = gate.Y(n_qubit, target_idx)
     operator_0 = (I+P) / 2
@@ -18,7 +18,7 @@ def Y_basis(state, n_qubit, target_idx):
     
     return operator_0, operator_1
 
-def Z_basis(state, n_qubit, target_idx):
+def Z_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubits)
     P = gate.Z(n_qubit, target_idx)
     operator_0 = (I+P) / 2
