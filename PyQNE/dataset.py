@@ -26,7 +26,6 @@ def generate(n_qubit, n_shot, ):
     
     meas_pattern_df = pd.DataFrame({"measurement_pattern":meas_pattern_list})
     meas_pattern_df["measurement_pattern"] = meas_pattern_df["measurement_pattern"].apply(lambda x: " ".join(x))
-    
     train_df = pd.DataFrame({"measurement_label":meas_label_list, "measurement_result":meas_result_list})
     train_df["measurement_label"] = train_df["measurement_label"].apply(lambda x: " ".join(x))
     train_df["measurement_result"] = train_df["measurement_result"].apply(lambda x: " ".join(x))

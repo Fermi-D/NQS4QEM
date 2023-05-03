@@ -18,20 +18,54 @@ def init_state(n_qubit, state_name):
         init_rho = init_state_vec @ init_state_vec.T.conjugate()
         return init_rho # |00...0><00...0|
 
-def Bell(state_name, n_qubit, error_model):
+def Bell(n_qubit, state_name, error_model, error_rate):
     if state_name == "state_vector":
         state_vector = init_state(n_qubit, state_name)
         state_vector = state_vector @ gate.H(n_qubit,0)
         state_vector = state_vector @ gate.Cx(n_qubit,0,1)
     
     if state_name == "density_matrix":
-        density_matrix = init_state(n_qubit, state_name)
-        density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
-        density_matrix = gate.Cx(n_qubit,0,1) @ density_matrix @ gate.Cx(n_qubit,0,1).T.conjugate()
+        if error_model == "ideal":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = gate.Cx(n_qubit,0,1) @ density_matrix @ gate.Cx(n_qubit,0,1).T.conjugate()
         
-        return density_matrix
+            return density_matrix
+        
+        if error_model == "depolarizing":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+            density_matrix = gate.Cx(n_qubit,0,1) @ density_matrix @ gate.Cx(n_qubit,0,1).T.conjugate()
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 1)
+            
+            return density_matrix
+        
+        if error_model == "unitary":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            density_matrix = gate.Cx(n_qubit,0,1) @ density_matrix @ gate.Cx(n_qubit,0,1).T.conjugate()
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 1)
+            
+            return density_matrix
+            
+        if error_model == "depolarizing&unitary":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            density_matrix = gate.Cx(n_qubit,0,1) @ density_matrix @ gate.Cx(n_qubit,0,1).T.conjugate()
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 1)
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 1)
+            
+            return density_matrix
 
-def GHZ(state_name, n_qubit, error_model):
+def GHZ(n_qubit, state_name, error_model):
     if state_name == "state_vector":
         state_vector = init_state(n_qubit, state_name)
         state_vector = state_vector @ gate.H(n_qubit, 0)
@@ -41,13 +75,53 @@ def GHZ(state_name, n_qubit, error_model):
         return state_vector
         
     if state_name == "density_matrix":
-        density_matrix = init_state(n_qubit, state_name)
-        density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+        if error_model == "ideal":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
         
-        for i in range(n_qubit-1):
-            density_matrix = gate.Cx(n_qubit,0,i+1) @ density_matrix @ gate.Cx(n_qubit,0,i+1).T.conjugate()
+            for i in range(n_qubit-1):
+                density_matrix = gate.Cx(n_qubit,0,i+1) @ density_matrix @ gate.Cx(n_qubit,0,i+1).T.conjugate()
             
-        return density_matrix
+            return density_matrix
+        
+        if error_model == "depolarizing":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+            
+            for i in range(n_qubit-1):
+                density_matrix = gate.Cx(n_qubit,0,i+1) @ density_matrix @ gate.Cx(n_qubit,0,i+1).T.conjugate()
+                density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+                density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, i+1)
+            
+            return density_matrix
+        
+        if error_model == "unitary":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            
+            for i in range(n_qubit-1):
+                density_matrix = gate.Cx(n_qubit,0,i+1) @ density_matrix @ gate.Cx(n_qubit,0,i+1).T.conjugate()
+                density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+                density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
+            
+            return density_matrix
+        
+        if error_model == "depolarizing&unitary":
+            density_matrix = init_state(n_qubit, state_name)
+            density_matrix = gate.H(n_qubit,0) @ density_matrix @ gate.H(n_qubit,0).T.conjugate()
+            density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+            density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            
+            for i in range(n_qubit-1):
+                density_matrix = gate.Cx(n_qubit,0,i+1) @ density_matrix @ gate.Cx(n_qubit,0,i+1).T.conjugate()
+                density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, 0)
+                density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+                density_matrix = error.depolarizing(density_matrix, n_qubit, error_rate, i+1)
+                density_matrix = error.unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
+            
+            return density_matrix
     
 """
 def random_circuit():
