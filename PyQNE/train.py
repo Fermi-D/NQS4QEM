@@ -1,5 +1,4 @@
 import torch
-
 from qucumber.nn_states import DensityMatrix
 from qucumber.nn_states import ComplexWaveFunction
 from qucumber.callbacks import MetricEvaluator
@@ -45,9 +44,36 @@ def delta(nn_state, space, **kwargs):
     )
     return delta_
 
-def state_vector(data):
-
-def density_matrix(data):
+def state_vector(meas_pattern_path, meas_label_path, meas_result_path, target_state_path):
+    meas_pattern = data.load_data(meas_pattern_path)
+    meas_label = data.load_data(meas_label_path)
+    meas_result = data.load_data(meas_result_path)
+    target_state = data.load_data(target_state_path)
     
-def max_eigen_vector(data):
+    nn_state_sv = ComplexWaveFunction(num_visible = CFG.n_visible_unit, 
+                                      num_hidden = CFG.n_hidden_unit, 
+                                      unitary_dict = unitaries.create_dict(),
+                                      gpu = True
+                                     )
+    
+    callbacks = create_callback_sv(nn_state_sv)
+    nn_state_sv.fit(data = train_samples,
+                    input_bases = train_bases,
+                    epochs = CFG.epochs,
+                    pos_batch_size = CFG.pbs,
+                    neg_batch_size = CFG.nbs,
+                    lr = CFG.sv_lr,
+                    k = CFG.k,
+                    bases = bases,
+                    callbacks = callbacks,
+                    time = True,
+                    #optimizer = torch.optim.Adadelta,
+                    #scheduler = torch.optim.lr_scheduler.StepLR,
+                    #scheduler_args = {"step_size": CFG.sv_lr_drop_epoch, "gamma": CFG.sv_lr_drop_factor},
+                   )
+    
+
+def density_matrix(meas_pattern_path, meas_label_path, meas_result_path, target_state_path):
+    
+def max_eigen_vector(meas_pattern_path, meas_label_path, meas_result_path, target_state_path):
     

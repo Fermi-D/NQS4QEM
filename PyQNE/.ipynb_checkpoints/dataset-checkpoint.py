@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm_notebook as tqdm
 import itertools
-
 import quantum_gate as gate
 import projection_operator as meas_operator
 import target_circuit as circuit

@@ -1,6 +1,5 @@
 import numpy as np
-
-from PyQNE import quantum_gate as gate
+import quantum_gate as gate
 
 def X_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubits)

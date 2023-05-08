@@ -1,5 +1,4 @@
 import torch
-
 from qucumber.nn_states import DensityMatrix
 from qucumber.nn_states import ComplexWaveFunction
 from qucumber.callbacks import MetricEvaluator
