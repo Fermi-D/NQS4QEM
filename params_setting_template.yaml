@@ -1,5 +1,5 @@
 circuit_info:
-    n_qubit : 2
+    n_qubit : 5
     n_shot : 10000
     state_name : "density matrix"
     noise_model : "depolarizing"
