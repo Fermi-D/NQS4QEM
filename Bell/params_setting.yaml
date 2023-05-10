@@ -1,7 +1,7 @@
 circuit_info:
     n_qubit : 2
-    n_shot : 10000
-    state_name : "density matrix"
+    n_data : 10000
+    state_name : "density_matrix"
     noise_model : "depolarizing"
     error_rate : 0.01
 
@@ -18,6 +18,7 @@ train_info:
     positive_batch_size : 1000
     negative_batch_size : 1000
     n_gibbs_step : 50
+    seed : 42
      
 sampling_info:
     n_sample : 100

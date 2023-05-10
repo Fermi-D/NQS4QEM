@@ -1,4 +1,61 @@
+import os
+import random
+import warnings
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import yaml
+from tqdm import tqdm_notebook as tqdm
+import itertools
+
+with open('./params_setting.yaml', 'r') as yml:
+    params = yaml.safe_load(yml)
+    
+# quantum circuit parameter
+n_qubit = params["circuit_info"]["n_qubit"]
+n_data = params["circuit_info"]["n_data"]
+each_n_shot = int(n_data / 3**n_qubit)
+state_name = params["circuit_info"]["state_name"]
+noise_model = params["circuit_info"]["noise_model"]
+error_rate = params["circuit_info"]["error_rate"]
+# RBM architecture parameter
+n_visible_unit = params["architecture_info"]["n_visible_unit"]
+n_hidden_unit = params["architecture_info"]["n_hidden_unit"] 
+n_aux_unit = params["architecture_info"]["n_aux_unit"]
+# train parameter
+lr = params["train_info"]["lr"]
+pbs = params["train_info"]["positive_batch_size"]
+nbs = params["train_info"]["negative_batch_size"]
+n_gibbs_step = params["train_info"]["n_gibbs_step"]
+period = 1
+epochs = params["train_info"]["n_epoch"]
+lr_drop_epoch = params["train_info"]["lr_drop_epoch"]
+lr_drop_factor = params["train_info"]["lr_drop_factor"]
+seed = params["train_info"]["seed"]
+# sampling parameter
+n_sampling = params["sampling_info"]["n_sample"]
+n_copy = params["sampling_info"]["n_copy"]
+# data path info
+data_path = f"./data/{noise_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}"
+
+# settings
+## warnings
+warnings.simplefilter('ignore')
+
+## seaborn layout
+sns.set()
+sns.set_style("white")
+
+## seed
+def seed_settings(seed=42):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    #torch.manual_seed(seed)
+    #qucumber.set_random_seed(seed, cpu=True, gpu=False)
+
+seed_settings(seed=seed)
 
 # 1-qubit gate
 ## pauli X
@@ -36,7 +93,7 @@ def Y(n_qubit, target_qubit_idx):
 ## pauli Z
 def Z(n_qubit, target_qubit_idx):
     I = np.eye(2)
-    local_Y = np.array([[1,0], [0,-1]])
+    local_Z = np.array([[1,0], [0,-1]])
     if target_qubit_idx==0:
         mat = local_Z
     else:
@@ -367,3 +424,174 @@ def SWAP(n_qubit, qubit_idx_1, qubit_idx_2):
 ## toffoli gate
 """
 def toffoli(n_qubit, control_qubit_idx_1, control_qubit_idx_2, target_qubit_idx):
+"""
+
+def depolarizing(state, n_qubit, error_rate, target_qubit_idx):
+    I = np.eye(2)
+    coff_I = (1-error_rate)*I
+    
+    if target_qubit_idx==0:
+        mat = coff_I
+    else:
+        mat = I
+    for i in range(n_qubit-1):
+        if i+1==target_qubit_idx:
+            mat = np.kron(mat, coff_I)
+        else:
+            mat = np.kron(mat, I)
+            
+    depolarizing_term1 = mat @ state
+    depolarizing_term2 = X(n_qubit, target_qubit_idx)@state@X(n_qubit, target_qubit_idx) + Y(n_qubit, target_qubit_idx)@state@Y(n_qubit, target_qubit_idx) + Z(n_qubit, target_qubit_idx)@state@Z(n_qubit, target_qubit_idx)
+    
+    return depolarizing_term1 + (error_rate/3)*depolarizing_term2
+    
+def unitary(state, n_qubit, theta, target_qubit_idx):
+    
+    return Rx(n_qubit, target_qubit_idx, theta) @ state @ Rx(n_qubit, target_qubit_idx, theta).T.conjugate()
+
+def init_state(n_qubit, state_name):
+    ket_0 = np.array([[1],[0]]) 
+    init_state = ket_0
+    
+    for i in range(2**(n_qubit-1)-1):
+        init_state = np.append(init_state, np.array([[0],[0]]), axis=0) # |00...0>
+    
+    if state_name == "density_matrix":
+        init_state_vec = init_state
+        init_state = init_state_vec @ init_state_vec.T.conjugate() # |00...0><00...0|
+    
+    return init_state
+
+def Bell(n_qubit, state_name, error_model, error_rate):
+    if state_name == "state_vector":
+        if error_model == "ideal":
+            state = init_state(n_qubit, state_name)
+            state = H(n_qubit,0) @ state
+            state = CX(n_qubit,0,1) @ state
+    
+    if state_name == "density_matrix":
+        if error_model == "ideal":
+            state = init_state(n_qubit, state_name)
+            state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
+            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
+        
+        if error_model == "depolarizing":
+            state = init_state(n_qubit, state_name)
+            state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
+            state = depolarizing(state, n_qubit, error_rate, 0)
+            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
+            state = depolarizing(state, n_qubit, error_rate, 0)
+            state = depolarizing(state, n_qubit, error_rate, 1)
+        
+        if error_model == "unitary":
+            state = init_state(n_qubit, state_name)
+            state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
+            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 1)
+            
+        if error_model == "depolarizing&unitary":
+            state = init_state(n_qubit, state_name)
+            state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
+            state = depolarizing(state, n_qubit, error_rate, 0)
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
+            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
+            state = depolarizing(state, n_qubit, error_rate, 0)
+            state = depolarizing(state, n_qubit, error_rate, 1)
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 1)
+            
+    return state
+
+def X_basis(n_qubit, target_idx):
+    I = np.eye(2**n_qubit)
+    P = X(n_qubit, target_idx)
+    operator_0 = (I+P) / 2
+    operator_1 = (I+P) / 2
+    
+    return operator_0, operator_1
+
+def Y_basis(n_qubit, target_idx):
+    I = np.eye(2**n_qubit)
+    P = Y(n_qubit, target_idx)
+    operator_0 = (I+P) / 2
+    operator_1 = (I+P) / 2
+    
+    return operator_0, operator_1
+
+def Z_basis(n_qubit, target_idx):
+    I = np.eye(2**n_qubit)
+    P = Z(n_qubit, target_idx)
+    operator_0 = (I+P) / 2
+    operator_1 = (I+P) / 2
+    
+    return operator_0, operator_1
+
+def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
+    target_qubit_idx_list = np.arange(n_qubit)
+    pauli_meas_dict = {"X":X_basis, "Y":Y_basis, "Z":Z_basis}
+    rho_0 = Bell(n_qubit, state_name, error_model, error_rate)
+    rho_1 = Bell(n_qubit, state_name, error_model, error_rate)
+    measurement_label_list = []
+    measurement_result_list = []
+    
+    for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
+        operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)
+        p0 = np.trace(operator0 @ rho_0)
+        p1 = np.trace(operator1 @ rho_1)
+        #print(f"p0 : {p0}")
+        #print(f"p1 : {p1}")
+        
+        #rho_0 = (operator0@rho_0@operator0)/ np.sqrt(p0)
+        #rho_1 = (operator1@rho_0@operator1) / np.sqrt(p1)
+        
+        measurement_label_list.append(pauli_str)
+        measurement_result_list.append(np.random.choice(["0","1"], p=[p0,p1]))
+        
+    return measurement_label_list, measurement_result_list
+
+def generate(n_qubit, state_name, n_shot, error_model):
+    meas_pattern_list = []
+    meas_label_list = []
+    meas_result_list = []
+    
+    pauli_meas_label = ["X", "Y", "Z"]
+    #operator_pattern_list = itertools.product(pauli_meas_label)
+    
+    for i, meas_pattern in enemerate(tqdm(itertools.product(pauli_meas_label, repeat=n_qubit))):
+        meas_pattern_list.append(meas_pattern)
+        print(f"measurement pattern {i} : {meas_pattern}")
+        
+        for j in tqdm(range(each_n_shot)):
+            label, result = pauli_measurement(n_qubit, state_name, error_model, meas_pattern)
+            meas_label_list.append(label)
+            meas_result_list.append(result)
+    
+    meas_pattern_df = pd.DataFrame({"measurement_pattern":meas_pattern_list})
+    meas_pattern_df["measurement_pattern"] = meas_pattern_df["measurement_pattern"].apply(lambda x: " ".join(x))
+    train_df = pd.DataFrame({"measurement_label":meas_label_list, "measurement_result":meas_result_list})
+    train_df["measurement_label"] = train_df["measurement_label"].apply(lambda x: " ".join(x))
+    train_df["measurement_result"] = train_df["measurement_result"].apply(lambda x: " ".join(x))
+    
+    return meas_pattern_df, train_df
+
+def main():
+    # save target state
+    ## state vector
+    ideal_state_vector = Bell(n_qubit, "state_vector", "ideal", error_rate)
+    ideal_state_vector_df = pd.DataFrame({"Re":np.real(ideal_state_vector).reshape(-1), "Im":np.imag(ideal_state_vector).reshape(-1)})
+    ideal_state_vector_df.to_csv("./target_state/state_vector.txt", header=False, index=False)
+    ## density matrix
+    ideal_density_matrix = Bell(n_qubit, "density_matrix", "ideal", error_rate)
+    np.savetxt("./target_state/rho_real.txt", np.real(ideal_density_matrix))
+    np.savetxt("./target_state/rho_imag.txt", np.imag(ideal_density_matrix))
+    
+    # save train data
+    meas_pattern_df, train_df = generate(n_qubit, state_name, n_shot, error_model)
+    meas_pattern_df.to_csv(data_path+"/measurement_pattern.txt", header=False, index=False)
+    train_df.to_csv(data_path+"/measurement_label.txt", columns = ["measurement_label"], header=False, index=False)
+    train_df.to_csv(data_path+"/measurement_result.txt", columns = ["measurement_result"], header=False, index=False)
+    
+if __name__ == "__main__":
+    main()

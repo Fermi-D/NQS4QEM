@@ -4,3 +4,5 @@ matplotlib
 tqdm
 qulacs
 qucumber
+optuna
+torch
