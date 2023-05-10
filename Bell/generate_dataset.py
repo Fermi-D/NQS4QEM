@@ -17,7 +17,7 @@ n_qubit = params["circuit_info"]["n_qubit"]
 n_data = params["circuit_info"]["n_data"]
 each_n_shot = int(n_data / 3**n_qubit)
 state_name = params["circuit_info"]["state_name"]
-noise_model = params["circuit_info"]["noise_model"]
+error_model = params["circuit_info"]["error_model"]
 error_rate = params["circuit_info"]["error_rate"]
 # RBM architecture parameter
 n_visible_unit = params["architecture_info"]["n_visible_unit"]
@@ -37,7 +37,7 @@ seed = params["train_info"]["seed"]
 n_sampling = params["sampling_info"]["n_sample"]
 n_copy = params["sampling_info"]["n_copy"]
 # data path info
-data_path = f"./data/{noise_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}"
+data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}"
 
 # settings
 ## warnings
@@ -551,7 +551,7 @@ def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
         
     return measurement_label_list, measurement_result_list
 
-def generate(n_qubit, state_name, n_shot, error_model):
+def generate(n_qubit, state_name, each_n_shot, error_model):
     meas_pattern_list = []
     meas_label_list = []
     meas_result_list = []
@@ -559,7 +559,7 @@ def generate(n_qubit, state_name, n_shot, error_model):
     pauli_meas_label = ["X", "Y", "Z"]
     #operator_pattern_list = itertools.product(pauli_meas_label)
     
-    for i, meas_pattern in enemerate(tqdm(itertools.product(pauli_meas_label, repeat=n_qubit))):
+    for i, meas_pattern in enumerate(tqdm(itertools.product(pauli_meas_label, repeat=n_qubit))):
         meas_pattern_list.append(meas_pattern)
         print(f"measurement pattern {i} : {meas_pattern}")
         
@@ -588,7 +588,7 @@ def main():
     np.savetxt("./target_state/rho_imag.txt", np.imag(ideal_density_matrix))
     
     # save train data
-    meas_pattern_df, train_df = generate(n_qubit, state_name, n_shot, error_model)
+    meas_pattern_df, train_df = generate(n_qubit, state_name, each_n_shot, error_model)
     meas_pattern_df.to_csv(data_path+"/measurement_pattern.txt", header=False, index=False)
     train_df.to_csv(data_path+"/measurement_label.txt", columns = ["measurement_label"], header=False, index=False)
     train_df.to_csv(data_path+"/measurement_result.txt", columns = ["measurement_result"], header=False, index=False)
