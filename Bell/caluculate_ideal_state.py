@@ -505,84 +505,18 @@ def Bell(n_qubit, state_name, error_model, error_rate):
             
     return state
 
-def X_basis(n_qubit, target_idx):
-    I = np.eye(2**n_qubit)
-    P = X(n_qubit, target_idx)
-    operator_0 = (I+P) / 2
-    operator_1 = (I+P) / 2
-    
-    return operator_0, operator_1
-
-def Y_basis(n_qubit, target_idx):
-    I = np.eye(2**n_qubit)
-    P = Y(n_qubit, target_idx)
-    operator_0 = (I+P) / 2
-    operator_1 = (I+P) / 2
-    
-    return operator_0, operator_1
-
-def Z_basis(n_qubit, target_idx):
-    I = np.eye(2**n_qubit)
-    P = Z(n_qubit, target_idx)
-    operator_0 = (I+P) / 2
-    operator_1 = (I+P) / 2
-    
-    return operator_0, operator_1
-
-def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
-    target_qubit_idx_list = np.arange(n_qubit)
-    pauli_meas_dict = {"X":X_basis, "Y":Y_basis, "Z":Z_basis}
-    rho_0 = Bell(n_qubit, state_name, error_model, error_rate)
-    rho_1 = Bell(n_qubit, state_name, error_model, error_rate)
-    measurement_label_list = []
-    measurement_result_list = []
-    
-    for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
-        operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)
-        p0 = np.trace(operator0 @ rho_0)
-        p1 = np.trace(operator1 @ rho_1)
-        #print(f"p0 : {p0}")
-        #print(f"p1 : {p1}")
-        
-        #rho_0 = (operator0@rho_0@operator0)/ np.sqrt(p0)
-        #rho_1 = (operator1@rho_0@operator1) / np.sqrt(p1)
-        
-        measurement_label_list.append(pauli_str)
-        measurement_result_list.append(np.random.choice(["0","1"], p=[p0,p1]))
-        
-    return measurement_label_list, measurement_result_list
-
-def generate(n_qubit, state_name, each_n_shot, error_model):
-    meas_pattern_list = []
-    meas_label_list = []
-    meas_result_list = []
-    
-    pauli_meas_label = ["X", "Y", "Z"]
-    #operator_pattern_list = itertools.product(pauli_meas_label)
-    
-    for i, meas_pattern in enumerate(tqdm(itertools.product(pauli_meas_label, repeat=n_qubit))):
-        meas_pattern_list.append(meas_pattern)
-        print(f"measurement pattern {i} : {meas_pattern}")
-        
-        for j in tqdm(range(each_n_shot)):
-            label, result = pauli_measurement(n_qubit, state_name, error_model, meas_pattern)
-            meas_label_list.append(label)
-            meas_result_list.append(result)
-    
-    meas_pattern_df = pd.DataFrame({"measurement_pattern":meas_pattern_list})
-    meas_pattern_df["measurement_pattern"] = meas_pattern_df["measurement_pattern"].apply(lambda x: " ".join(x))
-    train_df = pd.DataFrame({"measurement_label":meas_label_list, "measurement_result":meas_result_list})
-    train_df["measurement_label"] = train_df["measurement_label"].apply(lambda x: " ".join(x))
-    train_df["measurement_result"] = train_df["measurement_result"].apply(lambda x: " ".join(x))
-    
-    return meas_pattern_df, train_df
-
 def main():
-    # save train data
-    meas_pattern_df, train_df = generate(n_qubit, state_name, each_n_shot, error_model)
-    meas_pattern_df.to_csv(data_path+"/measurement_pattern.txt", header=False, index=False)
-    train_df.to_csv(data_path+"/measurement_label.txt", columns = ["measurement_label"], header=False, index=False)
-    train_df.to_csv(data_path+"/measurement_result.txt", columns = ["measurement_result"], header=False, index=False)
+    # save target state
+    ## state vector
+    ideal_state_vector = Bell(n_qubit, "state_vector", "ideal", error_rate)
+    ideal_state_vector_df = pd.DataFrame({"Re":np.real(ideal_state_vector).reshape(-1), "Im":np.imag(ideal_state_vector).reshape(-1)})
+    #ideal_state_vector_df["Re"] = ideal_state_vector_df["Re"].apply(lambda x: " ".join(x))
+    #ideal_state_vector_df["Im"] = ideal_state_vector_df["Im"].apply(lambda x: " ".join(x))
+    ideal_state_vector_df.to_csv("./target_state/state_vector.txt", sep="\t", header=False, index=False)
+    ## density matrix
+    ideal_density_matrix = Bell(n_qubit, "density_matrix", "ideal", error_rate)
+    np.savetxt("./target_state/rho_real.txt", np.real(ideal_density_matrix))
+    np.savetxt("./target_state/rho_imag.txt", np.imag(ideal_density_matrix))
     
 if __name__ == "__main__":
     main()

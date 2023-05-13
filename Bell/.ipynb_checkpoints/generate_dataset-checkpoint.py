@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yaml
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 import itertools
 
 with open('./params_setting.yaml', 'r') as yml:
@@ -37,7 +37,8 @@ seed = params["train_info"]["seed"]
 n_sampling = params["sampling_info"]["n_sample"]
 n_copy = params["sampling_info"]["n_copy"]
 # data path info
-data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}"
+train_data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}"
+ideal_state_path = f"./target_state"
 
 # settings
 ## warnings
@@ -577,16 +578,6 @@ def generate(n_qubit, state_name, each_n_shot, error_model):
     return meas_pattern_df, train_df
 
 def main():
-    # save target state
-    ## state vector
-    ideal_state_vector = Bell(n_qubit, "state_vector", "ideal", error_rate)
-    ideal_state_vector_df = pd.DataFrame({"Re":np.real(ideal_state_vector).reshape(-1), "Im":np.imag(ideal_state_vector).reshape(-1)})
-    ideal_state_vector_df.to_csv("./target_state/state_vector.txt", header=False, index=False)
-    ## density matrix
-    ideal_density_matrix = Bell(n_qubit, "density_matrix", "ideal", error_rate)
-    np.savetxt("./target_state/rho_real.txt", np.real(ideal_density_matrix))
-    np.savetxt("./target_state/rho_imag.txt", np.imag(ideal_density_matrix))
-    
     # save train data
     meas_pattern_df, train_df = generate(n_qubit, state_name, each_n_shot, error_model)
     meas_pattern_df.to_csv(data_path+"/measurement_pattern.txt", header=False, index=False)
