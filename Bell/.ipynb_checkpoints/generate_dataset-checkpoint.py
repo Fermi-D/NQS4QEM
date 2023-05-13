@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yaml
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 import itertools
 
 with open('./params_setting.yaml', 'r') as yml:
@@ -37,8 +37,8 @@ seed = params["train_info"]["seed"]
 n_sampling = params["sampling_info"]["n_sample"]
 n_copy = params["sampling_info"]["n_copy"]
 # data path info
-train_data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}"
-ideal_state_path = f"./target_state"
+train_data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}/"
+ideal_state_path = f"./target_state/"
 
 # settings
 ## warnings
