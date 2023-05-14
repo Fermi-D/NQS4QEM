@@ -509,7 +509,7 @@ def X_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
     P = X(n_qubit, target_idx)
     operator_0 = (I+P) / 2
-    operator_1 = (I+P) / 2
+    operator_1 = (I-P) / 2
     
     return operator_0, operator_1
 
@@ -517,7 +517,7 @@ def Y_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
     P = Y(n_qubit, target_idx)
     operator_0 = (I+P) / 2
-    operator_1 = (I+P) / 2
+    operator_1 = (I-P) / 2
     
     return operator_0, operator_1
 
@@ -525,7 +525,7 @@ def Z_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
     P = Z(n_qubit, target_idx)
     operator_0 = (I+P) / 2
-    operator_1 = (I+P) / 2
+    operator_1 = (I-P) / 2
     
     return operator_0, operator_1
 
@@ -539,10 +539,9 @@ def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
     
     for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
         operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)
+        
         p0 = np.trace(operator0 @ rho_0)
         p1 = np.trace(operator1 @ rho_1)
-        #print(f"p0 : {p0}")
-        #print(f"p1 : {p1}")
         
         #rho_0 = (operator0@rho_0@operator0)/ np.sqrt(p0)
         #rho_1 = (operator1@rho_0@operator1) / np.sqrt(p1)
