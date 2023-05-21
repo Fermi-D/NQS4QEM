@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yaml
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 import itertools
 
 with open('./params_setting.yaml', 'r') as yml:
@@ -442,9 +442,9 @@ def depolarizing(state, n_qubit, error_rate, target_qubit_idx):
             mat = np.kron(mat, I)
             
     depolarizing_term1 = mat @ state
-    depolarizing_term2 = (error_rate/2**n_qubit) * np.eye(2**n_qubit)
+    depolarizing_term2 = X(n_qubit, target_qubit_idx)@state@X(n_qubit, target_qubit_idx) + Y(n_qubit, target_qubit_idx)@state@Y(n_qubit, target_qubit_idx) + Z(n_qubit, target_qubit_idx)@state@Z(n_qubit, target_qubit_idx)
     
-    return depolarizing_term1 + depolarizing_term2
+    return depolarizing_term1 + (error_rate/3)*depolarizing_term2
     
 def unitary(state, n_qubit, theta, target_qubit_idx):
     
@@ -505,10 +505,9 @@ def Bell(n_qubit, state_name, error_model, error_rate):
             
     return state
 
-class Projective_Operator()
 def X_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
-    P = X(n_qubit, target_idx)
+    P = H(n_qubit, target_idx) @ Z(n_qubit, target_idx)
     operator_0 = (I+P) / 2
     operator_1 = (I-P) / 2
     
@@ -516,7 +515,7 @@ def X_basis(n_qubit, target_idx):
 
 def Y_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
-    P = Y(n_qubit, target_idx)
+    P = S(n_qubit, target_idx).T.conjugate() @ H(n_qubit, target_idx) @ Z(n_qubit, target_idx)
     operator_0 = (I+P) / 2
     operator_1 = (I-P) / 2
     

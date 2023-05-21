@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yaml
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 import itertools
 
 with open('./params_setting.yaml', 'r') as yml:
