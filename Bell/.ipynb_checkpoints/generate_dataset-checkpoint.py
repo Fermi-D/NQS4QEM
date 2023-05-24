@@ -532,22 +532,24 @@ def Z_basis(n_qubit, target_idx):
 def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
     target_qubit_idx_list = np.arange(n_qubit)
     pauli_meas_dict = {"X":X_basis, "Y":Y_basis, "Z":Z_basis}
-    rho_0 = Bell(n_qubit, state_name, error_model, error_rate)
-    rho_1 = Bell(n_qubit, state_name, error_model, error_rate)
+    
     measurement_label_list = []
     measurement_result_list = []
     
+    rho = Bell(n_qubit, state_name, error_model, error_rate)
+    
     for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
         operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)
+        p0 = np.real(np.trace(operator0 @ rho))
+        p1 = np.real(np.trace(operator1 @ rho))
         
-        p0 = np.trace(operator0 @ rho_0)
-        p1 = np.trace(operator1 @ rho_1)
-        
-        #rho_0 = (operator0@rho_0@operator0)/ np.sqrt(p0)
-        #rho_1 = (operator1@rho_0@operator1) / np.sqrt(p1)
-        
-        measurement_label_list.append(pauli_str)
         measurement_result_list.append(np.random.choice(["0","1"], p=[p0,p1]))
+        measurement_label_list.append(pauli_str)
+        
+        if measurement_result_list[target_qubit_idx] == "0":
+            rho = (operator0@rho@operator0)/ np.trace(operator0@operator0@rho)
+        if measurement_result_list[target_qubit_idx] == "1":
+            rho = (operator1@rho@operator1)/ np.trace(operator1@operator1@rho)
         
     return measurement_label_list, measurement_result_list
 
