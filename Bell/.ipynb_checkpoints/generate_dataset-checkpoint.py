@@ -14,8 +14,7 @@ with open('./params_setting.yaml', 'r') as yml:
     
 # quantum circuit parameter
 n_qubit = params["circuit_info"]["n_qubit"]
-n_data = params["circuit_info"]["n_data"]
-each_n_shot = int(n_data / 3**n_qubit)
+each_n_shot = params["circuit_info"]["each_n_shot"]
 state_name = params["circuit_info"]["state_name"]
 error_model = params["circuit_info"]["error_model"]
 error_rate = params["circuit_info"]["error_rate"]
@@ -37,7 +36,7 @@ seed = params["train_info"]["seed"]
 n_sampling = params["sampling_info"]["n_sample"]
 n_copy = params["sampling_info"]["n_copy"]
 # data path info
-train_data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{n_data}/"
+train_data_path = f"./data/{error_model}/error_prob_{100*error_rate}%/num_of_data_{each_n_shot}/"
 ideal_state_path = f"./target_state/"
 
 # settings
@@ -507,7 +506,7 @@ def Bell(n_qubit, state_name, error_model, error_rate):
 
 def X_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
-    P = H(n_qubit, target_idx) @ Z(n_qubit, target_idx)
+    P = X(n_qubit, target_idx)
     operator_0 = (I+P) / 2
     operator_1 = (I-P) / 2
     
@@ -515,7 +514,7 @@ def X_basis(n_qubit, target_idx):
 
 def Y_basis(n_qubit, target_idx):
     I = np.eye(2**n_qubit)
-    P = S(n_qubit, target_idx).T.conjugate() @ H(n_qubit, target_idx) @ Z(n_qubit, target_idx)
+    P = Y(n_qubit, target_idx)
     operator_0 = (I+P) / 2
     operator_1 = (I-P) / 2
     
@@ -540,16 +539,16 @@ def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
     
     for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
         operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)
-        p0 = np.real(np.trace(operator0 @ rho))
-        p1 = np.real(np.trace(operator1 @ rho))
+        p0 = np.real(np.trace(operator0.T.conjugate() @ operator0 @ rho))
+        p1 = np.real(np.trace(operator1.T.conjugate() @ operator1 @ rho))
         
         measurement_result_list.append(np.random.choice(["0","1"], p=[p0,p1]))
         measurement_label_list.append(pauli_str)
         
         if measurement_result_list[target_qubit_idx] == "0":
-            rho = (operator0@rho@operator0)/ np.trace(operator0@operator0@rho)
+            rho = (operator0@rho@operator0.T.conjugate())/ np.trace(operator0.T.conjugate()@operator0@rho)
         if measurement_result_list[target_qubit_idx] == "1":
-            rho = (operator1@rho@operator1)/ np.trace(operator1@operator1@rho)
+            rho = (operator1@rho@operator1.T.conjugate())/ np.trace(operator1.T.conjugate()@operator1@rho)
         
     return measurement_label_list, measurement_result_list
 

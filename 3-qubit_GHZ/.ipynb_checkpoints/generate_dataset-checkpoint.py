@@ -462,45 +462,54 @@ def init_state(n_qubit, state_name):
     
     return init_state
 
-def Bell(n_qubit, state_name, error_model, error_rate):
+def GHZ(n_qubit, state_name, error_model, error_rate):
     if state_name == "state_vector":
         if error_model == "ideal":
             state = init_state(n_qubit, state_name)
-            state = H(n_qubit,0) @ state
-            state = CX(n_qubit,0,1) @ state
-    
+            state = H(n_qubit, 0) @ state
+            for i in range(n_qubit-1):
+                state = CX(n_qubit, 0, i+1) @ state
+        
     if state_name == "density_matrix":
         if error_model == "ideal":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
+        
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
         
         if error_model == "depolarizing":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
             state = depolarizing(state, n_qubit, error_rate, 0)
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
-            state = depolarizing(state, n_qubit, error_rate, 0)
-            state = depolarizing(state, n_qubit, error_rate, 1)
+            
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
+                state = depolarizing(state, n_qubit, error_rate, 0)
+                state = depolarizing(state, n_qubit, error_rate, i+1)
         
         if error_model == "unitary":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 1)
+            state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
             
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
+        
         if error_model == "depolarizing&unitary":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = depolarizing(state, n_qubit, error_rate, 0)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
-            state = depolarizing(state, n_qubit, error_rate, 0)
-            state = depolarizing(state, n_qubit, error_rate, 1)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 1)
+            state = depolarizing(density_matrix, n_qubit, error_rate, 0)
+            state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
+                state = depolarizing(density_matrix, n_qubit, error_rate, 0)
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+                state = depolarizing(density_matrix, n_qubit, error_rate, i+1)
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
             
     return state
 
@@ -535,7 +544,7 @@ def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
     measurement_label_list = []
     measurement_result_list = []
     
-    rho = Bell(n_qubit, state_name, error_model, error_rate)
+    rho = GHZ(n_qubit, state_name, error_model, error_rate)
     
     for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
         operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)

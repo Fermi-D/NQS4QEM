@@ -462,127 +462,69 @@ def init_state(n_qubit, state_name):
     
     return init_state
 
-def Bell(n_qubit, state_name, error_model, error_rate):
+def GHZ(n_qubit, state_name, error_model, error_rate):
     if state_name == "state_vector":
         if error_model == "ideal":
             state = init_state(n_qubit, state_name)
-            state = H(n_qubit,0) @ state
-            state = CX(n_qubit,0,1) @ state
-    
+            state = H(n_qubit, 0) @ state
+            for i in range(n_qubit-1):
+                state = CX(n_qubit, 0, i+1) @ state
+        
     if state_name == "density_matrix":
         if error_model == "ideal":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
+        
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
         
         if error_model == "depolarizing":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
             state = depolarizing(state, n_qubit, error_rate, 0)
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
-            state = depolarizing(state, n_qubit, error_rate, 0)
-            state = depolarizing(state, n_qubit, error_rate, 1)
+            
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
+                state = depolarizing(state, n_qubit, error_rate, 0)
+                state = depolarizing(state, n_qubit, error_rate, i+1)
         
         if error_model == "unitary":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 1)
+            state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
             
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
+        
         if error_model == "depolarizing&unitary":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = depolarizing(state, n_qubit, error_rate, 0)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = CX(n_qubit,0,1) @ state @ CX(n_qubit,0,1).T.conjugate()
-            state = depolarizing(state, n_qubit, error_rate, 0)
-            state = depolarizing(state, n_qubit, error_rate, 1)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
-            state = unitary(state, n_qubit, np.sqrt(error_rate), 1)
+            state = depolarizing(density_matrix, n_qubit, error_rate, 0)
+            state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            
+            for i in range(n_qubit-1):
+                state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
+                state = depolarizing(density_matrix, n_qubit, error_rate, 0)
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+                state = depolarizing(density_matrix, n_qubit, error_rate, i+1)
+                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
             
     return state
 
-def X_basis(n_qubit, target_idx):
-    I = np.eye(2**n_qubit)
-    P = X(n_qubit, target_idx)
-    operator_0 = (I+P) / 2
-    operator_1 = (I-P) / 2
-    
-    return operator_0, operator_1
-
-def Y_basis(n_qubit, target_idx):
-    I = np.eye(2**n_qubit)
-    P = Y(n_qubit, target_idx)
-    operator_0 = (I+P) / 2
-    operator_1 = (I-P) / 2
-    
-    return operator_0, operator_1
-
-def Z_basis(n_qubit, target_idx):
-    I = np.eye(2**n_qubit)
-    P = Z(n_qubit, target_idx)
-    operator_0 = (I+P) / 2
-    operator_1 = (I-P) / 2
-    
-    return operator_0, operator_1
-
-def pauli_measurement(n_qubit, state_name, error_model, pauli_str_list):
-    target_qubit_idx_list = np.arange(n_qubit)
-    pauli_meas_dict = {"X":X_basis, "Y":Y_basis, "Z":Z_basis}
-    
-    measurement_label_list = []
-    measurement_result_list = []
-    
-    rho = Bell(n_qubit, state_name, error_model, error_rate)
-    
-    for target_qubit_idx, pauli_str in zip(target_qubit_idx_list, pauli_str_list):
-        operator0, operator1 = pauli_meas_dict[pauli_str](n_qubit, target_qubit_idx)
-        p0 = np.real(np.trace(operator0.T.conjugate() @ operator0 @ rho))
-        p1 = np.real(np.trace(operator1.T.conjugate() @ operator1 @ rho))
-        
-        measurement_result_list.append(np.random.choice(["0","1"], p=[p0,p1]))
-        measurement_label_list.append(pauli_str)
-        
-        if measurement_result_list[target_qubit_idx] == "0":
-            rho = (operator0@rho@operator0.T.conjugate())/ np.trace(operator0.T.conjugate()@operator0@rho)
-        if measurement_result_list[target_qubit_idx] == "1":
-            rho = (operator1@rho@operator1.T.conjugate())/ np.trace(operator1.T.conjugate()@operator1@rho)
-        
-    return measurement_label_list, measurement_result_list
-
-def generate(n_qubit, state_name, each_n_shot, error_model):
-    meas_pattern_list = []
-    meas_label_list = []
-    meas_result_list = []
-    
-    pauli_meas_label = ["X", "Y", "Z"]
-    #operator_pattern_list = itertools.product(pauli_meas_label)
-    
-    for i, meas_pattern in enumerate(tqdm(itertools.product(pauli_meas_label, repeat=n_qubit))):
-        meas_pattern_list.append(meas_pattern)
-        print(f"measurement pattern {i} : {meas_pattern}")
-        
-        for j in tqdm(range(each_n_shot)):
-            label, result = pauli_measurement(n_qubit, state_name, error_model, meas_pattern)
-            meas_label_list.append(label)
-            meas_result_list.append(result)
-    
-    meas_pattern_df = pd.DataFrame({"measurement_pattern":meas_pattern_list})
-    meas_pattern_df["measurement_pattern"] = meas_pattern_df["measurement_pattern"].apply(lambda x: " ".join(x))
-    train_df = pd.DataFrame({"measurement_label":meas_label_list, "measurement_result":meas_result_list})
-    train_df["measurement_label"] = train_df["measurement_label"].apply(lambda x: " ".join(x))
-    train_df["measurement_result"] = train_df["measurement_result"].apply(lambda x: " ".join(x))
-    
-    return meas_pattern_df, train_df
-
 def main():
-    # save train data
-    meas_pattern_df, train_df = generate(n_qubit, state_name, each_n_shot, error_model)
-    meas_pattern_df.to_csv(train_data_path+"/measurement_pattern.txt", header=False, index=False)
-    train_df.to_csv(train_data_path+"/measurement_label.txt", columns = ["measurement_label"], header=False, index=False)
-    train_df.to_csv(train_data_path+"/measurement_result.txt", columns = ["measurement_result"], header=False, index=False)
+    # save target state
+    ## state vector
+    ideal_state_vector = GHZ(n_qubit, "state_vector", "ideal", error_rate)
+    ideal_state_vector_df = pd.DataFrame({"Re":np.real(ideal_state_vector).reshape(-1), "Im":np.imag(ideal_state_vector).reshape(-1)})
+    #ideal_state_vector_df["Re"] = ideal_state_vector_df["Re"].apply(lambda x: " ".join(x))
+    #ideal_state_vector_df["Im"] = ideal_state_vector_df["Im"].apply(lambda x: " ".join(x))
+    ideal_state_vector_df.to_csv("./target_state/state_vector.txt", sep="\t", header=False, index=False)
+    ## density matrix
+    ideal_density_matrix = GHZ(n_qubit, "density_matrix", "ideal", error_rate)
+    np.savetxt("./target_state/rho_real.txt", np.real(ideal_density_matrix))
+    np.savetxt("./target_state/rho_imag.txt", np.imag(ideal_density_matrix))
     
 if __name__ == "__main__":
     main()
