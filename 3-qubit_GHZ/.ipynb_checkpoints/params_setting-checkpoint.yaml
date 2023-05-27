@@ -11,8 +11,8 @@ architecture_info:
     n_aux_unit : 9
 
 train_info:
-    n_epoch : 500
-    lr : 10
+    n_epoch : 1
+    lr : 5
     lr_drop_epoch : 10
     lr_drop_factor : 0.9
     positive_batch_size : 1000
