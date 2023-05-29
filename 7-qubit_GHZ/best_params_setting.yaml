@@ -1,0 +1,22 @@
+architecture_info:
+  n_aux_unit: 9
+  n_hidden_unit: 9
+  n_visible_unit: 3
+circuit_info:
+  each_n_shot: 1000
+  error_model: depolarizing
+  error_rate: 0.01
+  n_qubit: 3
+  state_name: density_matrix
+sampling_info:
+  n_copy: 2
+  n_sample: 100
+train_info:
+  lr: 2.520114405918404
+  lr_drop_epoch: 10
+  lr_drop_factor: 0.9
+  n_epoch: 1
+  n_gibbs_step: 16
+  negative_batch_size: 1000
+  positive_batch_size: 1000
+  seed: 42

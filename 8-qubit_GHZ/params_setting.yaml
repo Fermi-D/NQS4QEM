@@ -1,20 +1,25 @@
 circuit_info:
-     n_qubit : 2
-     n_shot :
-     state_name : "density matrix"
-     noise_model : "depolarizing error"
-     error_rate : 
+    n_qubit : 3
+    each_n_shot : 1000
+    state_name : "density_matrix"
+    error_model : "depolarizing"
+    error_rate : 0.01
 
-rbm_info:
-     n_visible_unit : 2
-     n_hidden_unit : 
-     n_aux_unit :
+architecture_info:
+    n_visible_unit : 3
+    n_hidden_unit : 9
+    n_aux_unit : 9
 
 train_info:
-     n_epoch : 
-     lr : 
-     lr_drop_epoch : 
-     lr_drop_factor :
-     positive_batch_size :
-     negative_batch_size :
-     n_gibbs_step : 
+    n_epoch : 500
+    lr : 10
+    lr_drop_epoch : 10
+    lr_drop_factor : 0.9
+    positive_batch_size : 1000
+    negative_batch_size : 1000
+    n_gibbs_step : 50
+    seed : 42
+     
+sampling_info:
+    n_sample : 100
+    n_copy : 2
