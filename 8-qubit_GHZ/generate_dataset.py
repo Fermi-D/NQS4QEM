@@ -491,25 +491,25 @@ def GHZ(n_qubit, state_name, error_model, error_rate):
         if error_model == "unitary":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
             
             for i in range(n_qubit-1):
                 state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
-                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
-                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
+                state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
+                state = unitary(state, n_qubit, np.sqrt(error_rate), i+1)
         
         if error_model == "depolarizing&unitary":
             state = init_state(n_qubit, state_name)
             state = H(n_qubit,0) @ state @ H(n_qubit,0).T.conjugate()
-            state = depolarizing(density_matrix, n_qubit, error_rate, 0)
-            state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
+            state = depolarizing(state, n_qubit, error_rate, 0)
+            state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
             
             for i in range(n_qubit-1):
                 state = CX(n_qubit,0,i+1) @ state @ CX(n_qubit,0,i+1).T.conjugate()
-                state = depolarizing(density_matrix, n_qubit, error_rate, 0)
-                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), 0)
-                state = depolarizing(density_matrix, n_qubit, error_rate, i+1)
-                state = unitary(density_matrix, n_qubit, np.sqrt(error_rate), i+1)
+                state = depolarizing(state, n_qubit, error_rate, 0)
+                state = unitary(state, n_qubit, np.sqrt(error_rate), 0)
+                state = depolarizing(state, n_qubit, error_rate, i+1)
+                state = unitary(state, n_qubit, np.sqrt(error_rate), i+1)
             
     return state
 
