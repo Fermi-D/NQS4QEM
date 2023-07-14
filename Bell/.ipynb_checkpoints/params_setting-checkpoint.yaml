@@ -2,8 +2,8 @@ circuit_info:
     n_qubit : 2
     each_n_shot : 1000
     state_name : "density_matrix"
-    error_model : "depolarizing&unitary"
-    error_rate : 0.05
+    error_model : "unitary"
+    error_rate : 0.01
 
 architecture_info:
     n_visible_unit : 2
@@ -12,13 +12,13 @@ architecture_info:
 
 train_info:
     n_epoch : 500
-    lr : 0.1
+    lr : 10
     lr_drop_epoch : 10
     lr_drop_factor : 0.9
     positive_batch_size : 1000
     negative_batch_size : 1000
     n_gibbs_step : 100
-    seed : 42
+    seed : 1
      
 sampling_info:
     n_sample : 100

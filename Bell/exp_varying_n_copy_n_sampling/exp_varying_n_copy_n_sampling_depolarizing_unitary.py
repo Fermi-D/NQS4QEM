@@ -212,8 +212,8 @@ def observable_XX_var(nn_state, **kwargs):
     return obs_stat["std_error"]**2
 
 # experiment params
-n_copy_list = np.arange(1, 11)[::-1]
-n_sampling_list = [10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
+n_copy_list = np.arange(1, 5)[::-1]
+n_sampling_list = [100, 1000, 10000, 100000]
 #error_model_list = ["depolarizing", "unitary", "depolarizing&unitary"]
 
 # number of execution
