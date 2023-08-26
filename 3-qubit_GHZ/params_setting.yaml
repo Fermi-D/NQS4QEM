@@ -11,13 +11,13 @@ architecture_info:
     n_aux_unit : 9
 
 train_info:
-    n_epoch : 500
+    n_epoch : 50
     lr : 10
     lr_drop_epoch : 10
     lr_drop_factor : 0.9
     positive_batch_size : 1000
     negative_batch_size : 1000
-    n_gibbs_step : 50
+    n_gibbs_step : 100
     seed : 42
      
 sampling_info:
