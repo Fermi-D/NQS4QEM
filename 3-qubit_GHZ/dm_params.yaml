@@ -1,17 +1,19 @@
+environment: "local"
+
 circuit_info:
-    n_qubit : 5
+    n_qubit : 3
     each_n_shot : 1000
     state_name : "density_matrix"
-    error_model : "depolarizing"
+    error_model : "depolarizing&unitary"
     error_rate : 0.01
 
 architecture_info:
-    n_visible_unit : 5
-    n_hidden_unit : 15
-    n_aux_unit : 15
+    n_visible_unit : 3
+    n_hidden_unit : 9
+    n_aux_unit : 9
 
 train_info:
-    n_epoch : 500
+    n_epoch : 50
     lr : 10
     lr_drop_epoch : 10
     lr_drop_factor : 0.9

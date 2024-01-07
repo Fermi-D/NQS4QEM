@@ -6,9 +6,9 @@ circuit_info:
     error_rate : 0.01
 
 architecture_info:
-    n_visible_unit : 3
-    n_hidden_unit : 9
-    n_aux_unit : 9
+    n_visible_unit : 5
+    n_hidden_unit : 15
+    n_aux_unit : 15
 
 train_info:
     n_epoch : 500
