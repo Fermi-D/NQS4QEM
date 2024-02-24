@@ -1,7 +1,7 @@
 circuit_info:
     circuit_name : "GHZ"
     n_qubit : 2
-    each_n_shot : 10000
+    each_n_shot : 100
     state_class : "density_matrix"
     error_model : "depolarizing"
     error_rate : 0.1
@@ -19,6 +19,7 @@ train_info:
     positive_batch_size : 5000
     negative_batch_size : 5000
     n_gibbs_step : 100
+    use_gpu : False
     seed : 42
      
 sampling_info:

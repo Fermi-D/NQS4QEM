@@ -1,5 +1,9 @@
+import os
 import numpy as np
 import pandas as pd
+import itertools
+from tqdm import tqdm
+
 import gate
 import measurement
 
@@ -12,7 +16,7 @@ def generate(state, n_qubit, error_model, each_n_shot):
     
     for i, meas_pattern in enumerate(tqdm(itertools.product(pauli_meas_label, repeat=n_qubit))):
         meas_pattern_list.append(meas_pattern)
-        print(f"measurement pattern {i+1} / {3**n_qubit} : {meas_pattern}")
+        print(f"measurement pattern {i+1}/{3**n_qubit} : {meas_pattern}")
         
         for j in tqdm(range(each_n_shot)):
             label, result = measurement.pauli(state, n_qubit, error_model, meas_pattern)
@@ -28,7 +32,7 @@ def generate(state, n_qubit, error_model, each_n_shot):
     return meas_pattern_df, train_df
 
 def save(meas_pattern_df, train_df, train_data_path):
-    meas_pattern_df, train_df = generate(n_qubit, state_name, each_n_shot, error_model)
+    os.makedirs(train_data_path, exist_ok = True)
     meas_pattern_df.to_csv(train_data_path+"measurement_pattern.txt", header=False, index=False)
     train_df.to_csv(train_data_path+"measurement_label.txt", columns = ["measurement_label"], header=False, index=False)
     train_df.to_csv(train_data_path+"measurement_result.txt", columns = ["measurement_result"], header=False, index=False)

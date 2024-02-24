@@ -1,6 +1,5 @@
 import numpy as np
 import gate
-import error_model
 
 '''
 import importlib
@@ -45,7 +44,7 @@ def GHZ(n_qubit, state_class, error_model, error_rate):
             for i in range(n_qubit-1):
                 state = gate.CX(n_qubit,0,i+1) @ state @ gate.CX(n_qubit,0,i+1).T.conjugate()
                 
-            state = error_model.global_depolarizing(state, n_qubit, error_rate)
+            state = gate.global_depolarizing_error(state, n_qubit, error_rate)
         
         if error_model == "unitary":
             state = init_state(n_qubit, state_class)
@@ -55,7 +54,7 @@ def GHZ(n_qubit, state_class, error_model, error_rate):
                 state = gate.CX(n_qubit,0,i+1) @ state @ gate.CX(n_qubit,0,i+1).T.conjugate()
                 
             for i in range(n_qubit):
-                state = error_model.unitary(state, n_qubit, np.arcsin(np.sqrt(error_rate)), target_qubit_idx)
+                state = gate.unitary_error(state, n_qubit, np.arcsin(np.sqrt(error_rate)), target_qubit_idx)
             
         if error_model == "depolarizing&unitary":
             state = init_state(n_qubit, state_class)
@@ -65,9 +64,9 @@ def GHZ(n_qubit, state_class, error_model, error_rate):
                 state = gate.CX(n_qubit,0,i+1) @ state @ gate.CX(n_qubit,0,i+1).T.conjugate()
                 
             for i in range(n_qubit):
-                state = error_model.unitary(state, n_qubit, np.arcsin(np.sqrt(error_rate)), target_qubit_idx)
+                state = gate.unitary_error(state, n_qubit, np.arcsin(np.sqrt(error_rate)), target_qubit_idx)
             
-            state = error_model.global_depolarizing(state, n_qubit, error_rate)
+            state = gate.global_depolarizing_error(state, n_qubit, error_rate)
             
     return state
 
@@ -88,19 +87,19 @@ def Random_Unitary(n_qubit, state_name, error_model, error_rate, seed):
         if error_model == "depolarizing":
             state = init_state(n_qubit, state_name)
             state = U @ state @ U.T.conjugate()
-            state = error_model.global_depolarizing(state, n_qubit, error_rate)
+            state = gate.global_depolarizing_error(state, n_qubit, error_rate)
         
         if error_model == "unitary":
             state = init_state(n_qubit, state_name)
             state = U @ state @ U.T.conjugate()
             for i in range(n_qubit):
-                state = error_model.unitary(state, n_qubit, np.arcsin(np.sqrt(error_rate)), i)
+                state = gate.unitary_error(state, n_qubit, np.arcsin(np.sqrt(error_rate)), i)
             
         if error_model == "depolarizing&unitary":
             state = init_state(n_qubit, state_name)
             state = U @ state @ U.T.conjugate()
-            state = error_model.global_depolarizing(state, n_qubit, error_rate)
+            state = error_model.global_depolarizing_error(state, n_qubit, error_rate)
             for i in range(n_qubit):
-                state = error_model.unitary(state, n_qubit, np.arcsin(np.sqrt(error_rate)), i)
+                state = gate.unitary_error(state, n_qubit, np.arcsin(np.sqrt(error_rate)), i)
     
     return state

@@ -46,6 +46,6 @@ def pauli(state, n_qubit, error_model, pauli_str_list):
         if measurement_result_list[target_qubit_idx] == "0":
             rho = (operator0 @ rho @ operator0.T.conjugate()) / np.trace(operator0.T.conjugate() @ operator0 @ rho)
         if measurement_result_list[target_qubit_idx] == "1":
-            rho = (operator @ rho @ operator1.T.conjugate()) / np.trace(operator1.T.conjugate() @ operator1 @ rho)
+            rho = (operator1 @ rho @ operator1.T.conjugate()) / np.trace(operator1.T.conjugate() @ operator1 @ rho)
         
     return measurement_label_list, measurement_result_list
