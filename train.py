@@ -1,6 +1,5 @@
 import torch
 from qucumber.nn_states import DensityMatrix
-from qucumber.nn_states import ComplexWaveFunction
 from qucumber.callbacks import MetricEvaluator
 import qucumber.utils.unitaries as unitaries
 import qucumber.utils.training_statistics as ts
@@ -8,72 +7,56 @@ import qucumber.utils.cplx as cplx
 import qucumber.utils.data as data
 import qucumber
 
-def alpha(nn_state, space, **kwargs):
-    rbm_psi = nn_state.psi(space)
-    normalization = nn_state.normalization(space).sqrt_()
-    alpha_ = cplx.norm(
-        torch.tensor([rbm_psi[0][0], rbm_psi[1][0]], device=nn_state.device)
-        / normalization
-    )
-    return alpha_
+import utils
 
-def beta(nn_state, space, **kwargs):
-    rbm_psi = nn_state.psi(space)
-    normalization = nn_state.normalization(space).sqrt_()
-    beta_ = cplx.norm(
-        torch.tensor([rbm_psi[0][1], rbm_psi[1][1]], device=nn_state.device)
-        / normalization
-    )
-    return beta_
-
-def gamma(nn_state, space, **kwargs):
-    rbm_psi = nn_state.psi(space)
-    normalization = nn_state.normalization(space).sqrt_()
-    gamma_ = cplx.norm(
-        torch.tensor([rbm_psi[0][2], rbm_psi[1][2]], device=nn_state.device)
-        / normalization
-    )
-    return gamma_
-
-def delta(nn_state, space, **kwargs):
-    rbm_psi = nn_state.psi(space)
-    normalization = nn_state.normalization(space).sqrt_()
-    delta_ = cplx.norm(
-        torch.tensor([rbm_psi[0][3], rbm_psi[1][3]], device=nn_state.device)
-        / normalization
-    )
-    return delta_
-
-def state_vector(meas_pattern_path, meas_label_path, meas_result_path, target_state_path):
-    meas_pattern = data.load_data(meas_pattern_path)
-    meas_label = data.load_data(meas_label_path)
-    meas_result = data.load_data(meas_result_path)
-    target_state = data.load_data(target_state_path)
+def load_data_SV(train_data_path: str):
+    meas_pattern_path = train_data_path + "measurement_pattern.txt"
+    meas_label_path = train_data_path + "measurement_label.txt"
+    meas_result_path = train_data_path + "measurement_result.txt"
+    target_vec_path = target_state_path + "state_vector.txt"
+    meas_result, target_vec, meas_label, meas_pattern = data.load_data(meas_result_path, target_vec_path, meas_label_path, meas_pattern_path)
     
-    nn_state_sv = ComplexWaveFunction(num_visible = CFG.n_visible_unit, 
-                                      num_hidden = CFG.n_hidden_unit, 
-                                      unitary_dict = unitaries.create_dict(),
-                                      gpu = True
-                                     )
+    return meas_result, target_vec, meas_label, meas_pattern
+
+def load_data_(train_data_path: str):
+    meas_pattern_path = train_data_path + "measurement_pattern.txt"
+    meas_label_path = train_data_path + "measurement_label.txt"
+    meas_result_path = train_data_path + "measurement_result.txt"
+    target_rho_re_path = target_state_path + "rho_real.txt"
+    target_rho_im_path = target_state_path + "rho_imag.txt"
+    meas_result, target_rho, meas_label, meas_pattern = data.load_data_DM(meas_result_path, target_rho_re_path, target_rho_im_path, meas_label_path, meas_pattern_path)
     
-    callbacks = create_callback_sv(nn_state_sv)
-    nn_state_sv.fit(data = train_samples,
-                    input_bases = train_bases,
-                    epochs = CFG.epochs,
-                    pos_batch_size = CFG.pbs,
-                    neg_batch_size = CFG.nbs,
-                    lr = CFG.sv_lr,
-                    k = CFG.k,
-                    bases = bases,
-                    callbacks = callbacks,
-                    time = True,
-                    #optimizer = torch.optim.Adadelta,
-                    #scheduler = torch.optim.lr_scheduler.StepLR,
-                    #scheduler_args = {"step_size": CFG.sv_lr_drop_epoch, "gamma": CFG.sv_lr_drop_factor},
-                   )
+    return meas_result, target_rho, meas_label, meas_pattern
+
+def ps_architecture(num_visible: int, num_hidden: int, use_gpu: bool):
+    nn_state = ComplexWaveFunction(num_visible = num_visible, num_hidden = num_hidden, unitary_dict = unitaries.create_dict(), gpu = use_gpu)
+    return nn_state
+
+def ms_architecture(num_visible: int, num_hidden: int, num_aux: int, use_gpu: bool):
+    nn_state = DensityMatrix(num_visible = num_visible, num_hidden = num_hidden, num_aux = n_aux_unit, unitary_dict = unitaries.create_dict(), gpu = use_gpu)
+    return nn_state
+
+def create_callback_sv(nn_state):
+    metric_dict = {
+        "Ideal_fidelity": ts.fidelity,
+        #"Noisy_fidelity": noisy_fidelity,
+        "KL_Divergence": ts.KL,
+    }
+    space = nn_state.generate_hilbert_space()
+    callbacks = [
+        MetricEvaluator(
+            period,
+            metric_dict,
+            target = target_vec,
+            bases = meas_pattern,
+            verbose = True,
+            space = space,
+        )
+    ]
+    
+    return callbacks
+
+def state_vector():
     
 
-def density_matrix(meas_pattern_path, meas_label_path, meas_result_path, target_state_path):
-    
-def max_eigen_vector(meas_pattern_path, meas_label_path, meas_result_path, target_state_path):
-    
+def density_matrix():

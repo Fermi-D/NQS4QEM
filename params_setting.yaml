@@ -1,0 +1,26 @@
+circuit_info:
+    circuit_name : "GHZ"
+    n_qubit : 2
+    each_n_shot : 10000
+    state_class : "density_matrix"
+    error_model : "depolarizing"
+    error_rate : 0.1
+
+architecture_info:
+    n_visible_unit : 2
+    n_hidden_unit : 6
+    n_aux_unit : 6
+
+train_info:
+    n_epoch : 500
+    lr : 10
+    lr_drop_epoch : 10
+    lr_drop_factor : 0.9
+    positive_batch_size : 5000
+    negative_batch_size : 5000
+    n_gibbs_step : 100
+    seed : 42
+     
+sampling_info:
+    n_sample : 1000
+    n_copy : 2
