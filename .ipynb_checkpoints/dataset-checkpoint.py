@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import itertools
-from tqdm import tqdm
+from tqdm import tqdm_notebook as tqdm
 
 import gate
 import measurement
