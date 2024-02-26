@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+from scipy.linalg import sqrtm
 
 import qucumber.utils.data as data
 import qucumber.utils.cplx as cplx

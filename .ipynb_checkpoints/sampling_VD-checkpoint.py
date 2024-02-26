@@ -4,6 +4,7 @@ import qucumber.utils.data as data
 from qucumber.observables import ObservableBase, to_pm1
 from qucumber.observables.pauli import flip_spin
 import qucumber
+from uncertainties import ufloat
 
 class GeneralPauliDistill(ObservableBase):
     def __init__(self, pauli_dict: dict, m: int) -> None:
@@ -105,7 +106,6 @@ def obs_estimater(nn_state, pauli_dict: dict, num_samples: int, num_copies: int)
     num_stat = obs_num.statistics(nn_state, num_samples=num_samples)
     div_stat = obs_div.statistics(nn_state, num_samples=num_samples)
 
-    from uncertainties import ufloat
     num = ufloat(num_stat["mean"], num_stat["std_error"])
     div = ufloat(div_stat["mean"], div_stat["std_error"])
     val = num/div
