@@ -1,15 +1,15 @@
 circuit_info:
     circuit_name : "GHZ"
-    n_qubit : 4
+    n_qubit : 10
     each_n_shot : 1000
     state_class : "density_matrix"
     error_model : "depolarizing"
     error_rate : 0.1
 
 architecture_info:
-    n_visible_unit : 4
-    n_hidden_unit : 12
-    n_aux_unit : 12
+    n_visible_unit : 10
+    n_hidden_unit : 30
+    n_aux_unit : 30
 
 train_info:
     n_epoch : 500
